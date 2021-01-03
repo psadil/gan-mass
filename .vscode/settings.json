@@ -1,4 +1,12 @@
 {
-    "python.pythonPath": "/home/psadil/anaconda3/envs/gan/bin/python",
-    "jupyter.jupyterServerType": "local"
+    "python.pythonPath": "/home/vm01/anaconda3/envs/tensorflow/bin/python",
+    "jupyter.jupyterServerType": "local",
+    "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/data/**": true,
+        "**/data-raw/**": true
+      },
+      "git.ignoreLimitWarning": true
+    
 }
