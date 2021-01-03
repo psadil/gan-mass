@@ -1,0 +1,3 @@
+[submodule "libs/stylegan2-ada"]
+	path = libs/stylegan2-ada
+	url = git@github.com:NVlabs/stylegan2-ada.git
