@@ -7,10 +7,65 @@ from pyproj import Proj
 import math
 import imageio
 import sys
-import moviepy.editor as mp
 
-DownLoc = "data-raw/streetview"
-key = "&key=" + "AIzaSyCnvcJKcSyb_cYJ8P-FUoqfXCtmg8Xl4UQ"
+from secrets import GOOGLE
+
+# place_id finder:  https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder?hl=en
+
+key = "&key=" + GOOGLE
+
+# Amherst Center -> Boston Logan
+#data = urllib.parse.urlencode(
+#    {"origin": "place_id:ChIJH79CLPbN5okRjKnQ15YCBnc", 
+#    "destination": "place_id:ChIJN0na1RRw44kRRFEtH8OUkww", 
+#    "key": GOOGLE})
+
+# Bookmill -> Hanover, NH
+#data = urllib.parse.urlencode(
+#    {"origin": "place_id:ChIJy1BF_D0u4YkRXGF6np16qBo", 
+#    "destination": "place_id:ChIJ5cyscCK3tEwRT_DsE-vcGn8", 
+#    "key": GOOGLE})
+
+# noho -> portland, me
+#data = urllib.parse.urlencode(
+#    {"origin": "place_id:ChIJBSqOfD7X5okRC9vYEwt1FsM", 
+#    "destination": "place_id:ChIJLe6wqnKcskwRKfpyM7W2nX4", 
+#    "key": GOOGLE})
+
+# logan -> portland, me
+#data = urllib.parse.urlencode(
+#    {"origin": "place_id:ChIJN0na1RRw44kRRFEtH8OUkww", 
+#    "destination": "place_id:ChIJLe6wqnKcskwRKfpyM7W2nX4", 
+#    "key": GOOGLE})
+
+# noho -> kemptville
+#data = urllib.parse.urlencode(
+#    {"origin": "place_id:ChIJBSqOfD7X5okRC9vYEwt1FsM", 
+#    "destination": "place_id:ChIJv2UXCyTAzUwRJqBkNxooId8", 
+#    "key": GOOGLE})
+
+# noho -> montreal
+#data = urllib.parse.urlencode(
+#    {"origin": "place_id:ChIJBSqOfD7X5okRC9vYEwt1FsM", 
+#    "destination": "place_id:ChIJDbdkHFQayUwR7-8fITgxTmU", 
+#    "key": GOOGLE})
+
+# montreal -> kemptville
+#data = urllib.parse.urlencode(
+#    {"origin": "place_id:ChIJDbdkHFQayUwR7-8fITgxTmU", 
+#    "destination": "place_id:ChIJv2UXCyTAzUwRJqBkNxooId8", 
+#    "key": GOOGLE})
+
+# logan -> somerville, via south station|museum  of fine arts|lowell
+data = urllib.parse.urlencode(
+    {"origin": "place_id:ChIJN0na1RRw44kRRFEtH8OUkww", 
+    "destination": "place_id:ChIJZeH1eyl344kRA3v52Jl3kHo",
+    "waypoints": "via:place_id:ChIJW46859l744kR1Wn6zpu-oPU|via:place_id:ChIJS3rn5w1644kRZNWVxNY_Ay8|via:place_id:ChIJP00s4kmk44kRa5ZSf3715d0",
+    "key": GOOGLE},
+    safe=":|") 
+
+DownLoc = "data-raw/logan_somerville"
+
 
 def distance_cart(p1, p2):
     return( math.sqrt((p1[0]-p2[0])*(p1[0]-p2[0]) + (p1[1]-p2[1])*(p1[1]-p2[1])))
@@ -91,12 +146,6 @@ def decode_polyline(polyline_str):
     return coordinates
 
 
-# Amherst Center -> Boston Logan
-# place_id finder:  https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder?hl=en
-data = urllib.parse.urlencode(
-    {"origin": "place_id:ChIJH79CLPbN5okRjKnQ15YCBnc", 
-    "destination": "place_id:ChIJN0na1RRw44kRRFEtH8OUkww", 
-    "key": "AIzaSyCnvcJKcSyb_cYJ8P-FUoqfXCtmg8Xl4UQ"})
 
 with urllib.request.urlopen(f"https://maps.googleapis.com/maps/api/directions/json?{data}") as f:
     result = json.load(f)
@@ -111,7 +160,6 @@ for i in range (0, len (result["routes"][0]["legs"][0]["steps"])):
     points1 = result["routes"][0]["legs"][0]["steps"][i]["polyline"]["points"]
     if (points1 is not None):
         coord.append(decode_polyline(points1))
-
 
 
 cc=[]
@@ -147,9 +195,8 @@ for i in range (1, len(cce)):
         res_dir.append(dir_cart(cce[len(cce)-1], prev))
 
 # download
-image_list = []
 for ct, i in enumerate(res):
     lat, lon = p(i[0], i[1], inverse=True)
-    temp = GetStreetLL(Lat=lat, Lon=lon, Head=90, File=f"Image_{ct}", SaveLoc=DownLoc)
-    if temp[2] is not None:
-        image_list.append(temp)
+    for h in [0, 90, 180, 270]:
+        temp = GetStreetLL(Lat=lat, Lon=lon, Head=h, File=f"image-{ct}_head-{h}", SaveLoc=DownLoc)
+
